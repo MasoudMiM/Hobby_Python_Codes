@@ -7,3 +7,13 @@
 # structure and their legal ownership. Each row in the dataset represents a specific building in the 
 # region that was hit by Gorkha earthquake.
 
+######### Importing the libraries
+import numpy as np
+import pandas as pd
+
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+######### Looking into the features
+
+
