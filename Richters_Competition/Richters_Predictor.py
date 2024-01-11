@@ -140,3 +140,45 @@ for column in df_test_values.select_dtypes(include=['object']):
     # predict the test set
     y_pred = model_dic[model_selected].predict(x_test_scaled)
 
+# let's now train a neural network model and see how it performs
+import tensorflow as tf
+from tensorflow import keras
+from tensorflow.keras import layers
+from tensorflow.keras.layers.experimental import preprocessing
+
+# let's define the model
+nn_model = keras.Sequential([
+    layers.Dense(64, activation='relu'),
+    layers.Dense(64, activation='relu'),
+    layers.Dense(3)
+])
+
+nn_model.compile(loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+              optimizer=tf.keras.optimizers.Adam(),
+              metrics=['accuracy'])
+
+# ler's normalize the data and then train the model
+min_max_scaler = MinMaxScaler()
+x_train_scaled = min_max_scaler.fit_transform(X_train)
+x_val_scaled = min_max_scaler.fit_transform(X_val)
+nn_model.fit(x_train_scaled, y_train, epochs=10)
+
+
+# let's try to use the model to predict the test data
+df_test_values = pd.read_csv(f"{directory}test_values.csv")
+# converting the categorical variables into numerical values.
+for column in df_test_values.select_dtypes(include=['object']):
+    df_test_values[column],_ = pd.factorize(df_test_values[column])
+    # data normalization
+    min_max_scaler = MinMaxScaler()
+    x_train_scaled = min_max_scaler.fit_transform(df_train_values)
+    x_test_scaled = min_max_scaler.fit_transform(df_test_values)
+    # predict the test set
+    y_pred = nn_model.predict(x_test_scaled)
+    y_pred = np.argmax(y_pred, axis=1)
+
+# put the results into a csv file
+df_test_values['damage_grade'] = y_pred
+df_test_values[['building_id', 'damage_grade']].to_csv(f"{directory}submission.csv", index=False)
+
+
